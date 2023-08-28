@@ -9,22 +9,23 @@
 #include<string>
 #include<vector>
 #include "swarm_scheduler.hpp"
+#include "read_csv.hpp"
 
 int main() {
     mtsp_drones_gym::Workspace ws(true);
-    ws.add_drone(0.5,0.5, 0.1, 1);
-    ws.add_drone(1.5, 0.5, 0.1, 1);
-    ws.add_drone(-0.25, -0.75, 0.1, 1);
-    ws.add_drone(-0.5, -0.5, 0.1, 1);
-    ws.add_drone(0, 1, 0.1, 1);
-    ws.set_step_time(0.015);
     
+    std::vector<std::vector<double> > drone_params = read_csv::read_csv_drones("../csv/10drones.csv");
+    std::vector<std::vector<double> > payload_params = read_csv::read_csv_payloads("../csv/50payloads.csv");
 
-    ws.add_payload(3, 0, 1, 2.5, 3);
-    ws.add_payload(-3.5, 0.25, 1, 0.5, -1);
-    ws.add_payload(2.5, 0.25, 3, 1.5, -1);
-    ws.add_payload(-3, 0, 1,1,-0.5);
-    ws.add_payload(2,-1,1, 1,1);
+    for(int k = 0;k<=4;k++){
+        ws.add_drone(drone_params[0][k],drone_params[1][k], 0.1, 1);
+    }
+
+    for(int w = 0;w<=4;w++){
+        ws.add_payload(payload_params[0][w], payload_params[1][w], payload_params[2][w], payload_params[3][w], payload_params[4][w]);
+    }
+    
+    
     std::vector<Eigen::Vector2d> goals = std::vector<Eigen::Vector2d> {Eigen::Vector2d(-1, 0), Eigen::Vector2d(0, 0), Eigen::Vector2d(0, 1), Eigen::Vector2d(1, 0), Eigen::Vector2d(-1, 0)};
  
         
@@ -65,12 +66,12 @@ int main() {
     ws.set_swarm_config_tracker(swarm_config_tracker);
 
     std::vector<std::vector<int>> mission_drones_list = {
-        {1,1,1,0,0},
-        {0,1,0,0,0},
-        {0,0,1,0,0},
-        {0,0,0,1,0},
-        {0,0,0,0,1}
-        //{0,1,0,0,1}
+       {1,1,1,0,0},
+       {0,1,0,0,0},
+       {0,0,1,0,0},
+       {0,0,0,1,0},
+       {0,0,0,0,1}
+       //{0,1,0,0,1}
     };
     std::vector <int> mission_idx = {2,4,1,0,3};
     swarm_scheduler::SwarmScheduler sc;
@@ -82,13 +83,9 @@ int main() {
 
 
 
-    // sc.getpayload_data(ws.read_payloads());
-    // sc.set_swarm_config_tracker(swarm_config_tracker);
-
+    
     for (int i=0; i<10000; i++) {
         sc.print_mission();
-        //sc.print_mision_idx();
-        //sc.print_payloads();
         sc.mission_check();
         sc.print_wait_time();
         auto output = ws.step();
@@ -111,7 +108,7 @@ int main() {
 
 
         drone_list.clear();
-         for (int j=0; j < sc.getdrone_len(); j++) {
+         for (int j=0; j < drone_states.size(); j++) {
              //std::cout << "for path : " << paths[j][1][0] <<  paths[j][1][1] << std::endl;
           
              std::cout << "current x: " << drone_states[j][0] << std::endl;
